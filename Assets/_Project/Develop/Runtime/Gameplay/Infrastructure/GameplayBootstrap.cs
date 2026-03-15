@@ -13,6 +13,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
         private DIContainer _container;
         private GameplayInputArgs _inputArgs;
         private bool _isReady;
+        private GameplayController _gameplayController;
 
         public override void ProcessRegistrations(DIContainer container, IInputSceneArgs sceneArgs = null)
         {
@@ -31,15 +32,15 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             Debug.Log($"Selected mode: {_inputArgs.SelectedMode}");
             Debug.Log("Initializing Gameplay Scene");
 
-            GameplayController gameplayController = _container.Resolve<GameplayController>();
-            gameplayController.Initialize();
+            _gameplayController = _container.Resolve<GameplayController>();
+            _gameplayController.Initialize();
 
             yield break;
         }
 
         public override void Run()
         {
-            Debug.Log("Start Gameplay scene");
+            Debug.Log("Start Gameplay Scene");
             _isReady = true;
         }
 
@@ -48,8 +49,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             if (_isReady == false)
                 return;
 
-            GameplayController gameplayController = _container.Resolve<GameplayController>();
-            gameplayController.ProcessInput();
+            _gameplayController?.ProcessInput();
         }
     }
 }

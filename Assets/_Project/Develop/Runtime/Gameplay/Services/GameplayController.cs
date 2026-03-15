@@ -1,6 +1,5 @@
 using Assets._Project.Develop.Runtime.Gameplay.Config;
 using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
-using Assets._Project.Develop.Runtime.Infrastructure.DI;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagement;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagement;
 using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
@@ -13,7 +12,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Services
     {
         private readonly ConfigsProviderService _configsProvider;
         private readonly SequenceGeneratorService _sequenceGenerator;
-        private readonly DIContainer _container;
+        private readonly SceneSwitcherService _sceneSwitcherService;
+        private readonly ICoroutinesPerformer _coroutinesPerformer;
         private readonly GameplayInputArgs _inputArgs;
 
         private GameModeConfig _gameModeConfig;
@@ -25,12 +25,14 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Services
         public GameplayController(
             ConfigsProviderService configsProvider,
             SequenceGeneratorService sequenceGenerator,
-            DIContainer container,
+            SceneSwitcherService sceneSwitcherService,
+            ICoroutinesPerformer coroutinesPerformer,
             GameplayInputArgs inputArgs)
         {
             _configsProvider = configsProvider;
             _sequenceGenerator = sequenceGenerator;
-            _container = container;
+            _sceneSwitcherService = sceneSwitcherService;
+            _coroutinesPerformer = coroutinesPerformer;
             _inputArgs = inputArgs;
         }
 
@@ -104,7 +106,6 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Services
             {
                 Debug.Log($"<color=red>DEFEAT!</color> You typed: {currentStr}");
                 Debug.Log("Press <color=yellow>SPACE</color> to restart the game.");
-
                 _isGameOver = true;
                 return;
             }
@@ -113,23 +114,18 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Services
             {
                 Debug.Log("<color=green>VICTORY!</color> You entered the correct sequence.");
                 Debug.Log("Press <color=yellow>SPACE</color> to return to the Main Menu.");
-
                 _isGameOver = true;
             }
         }
 
         private void ReturnToMainMenu()
         {
-            SceneSwitcherService sceneSwitcherService = _container.Resolve<SceneSwitcherService>();
-            ICoroutinesPerformer coroutinesPerformer = _container.Resolve<ICoroutinesPerformer>();
-            coroutinesPerformer.StartPerform(sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu));
+            _coroutinesPerformer.StartPerform(_sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu));
         }
 
         private void RestartGameplay()
         {
-            SceneSwitcherService sceneSwitcherService = _container.Resolve<SceneSwitcherService>();
-            ICoroutinesPerformer coroutinesPerformer = _container.Resolve<ICoroutinesPerformer>();
-            coroutinesPerformer.StartPerform(sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, _inputArgs));
+            _coroutinesPerformer.StartPerform(_sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, _inputArgs));
         }
     }
 }
